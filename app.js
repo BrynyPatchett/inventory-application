@@ -3,12 +3,29 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const mongoose  = require('mongoose')
+require("dotenv").config();
+
+const DB_URL = process.env.MONGO_DB_CONNECTION_URL;
+//connect to database
+mongoose.set("strictQuery",false);
+
+async function main(){
+  await mongoose.connect(DB_URL);
+  console.log("Database connected")
+}
+
+main().catch((err)=>{
+console.log("Error Connecting to Database: " + err)
+})
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const inventoryRouter = require('./routes/inventory');
 
 var app = express();
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
