@@ -1,7 +1,8 @@
-const express = ('express')
-const router = ('express-router');
+const express = require('express')
+const router = express.Router();
 
 const item_controller = require('../controllers/itemController');
+const category_controller = require('../controllers/categoryController');
 
 
 //index route is contained in item controller
@@ -29,17 +30,17 @@ router.get('/category/create',category_controller.create_get);
 
 router.post('/category/create',category_controller.create_post);
 
-router.get('/category/:item_id',category_controller.detail_get);
+router.get('/category/:category_id',category_controller.detail_get);
 
-router.get('/category/:item_id/update',category_controller.update_get);
+router.get('/category/:category_id/update',category_controller.update_get);
 
-router.post('/category/:item_id/update',category_controller.update_post);
+router.post('/category/:category_id/update',category_controller.update_post);
 
-router.get('/category/:item_id/delete',category_controller.delete_get);
+router.get('/category/:category_id/delete',category_controller.delete_get);
 
-router.post('/category/:item_id/delete',category_controller.delete_post);
+router.post('/category/:category_id/delete',category_controller.delete_post);
 
-router.get('/categories',item_controller.category_controller.category_list)
+router.get('/categories',category_controller.category_list)
 
 
 
