@@ -1,6 +1,9 @@
 const asyncHandler = require('express-async-handler');
 
-exports.index = null;
+exports.index = asyncHandler( async(req,res) => {
+    res.send("Index Page for Items")
+}
+);
 
 exports.item_list = null;
 
