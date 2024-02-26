@@ -1,13 +1,21 @@
+const Category = require("../models/category")
 const asyncHandler = require('express-async-handler');
 
 
 exports.category_list = asyncHandler(async (req, res) => {
-    res.send("NOT_YET_IMPLEMENTED: Page for Category list")
+    const categories = await Category.find().sort({name:1}).exec()
+    res.send(categories);
 }
 );
 
-exports.detail_get = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Detail Page for Category: ${req.params.category_id}`)
+exports.detail_get = asyncHandler(async (req, res,next) => {
+    const category = await Category.findById(req.params.category_id);
+    if(category == null){
+        const err = new Error("Category Not Found");
+        err.status = 404;
+        return next(err)
+    }
+    res.send(category);
 });
 
 exports.create_get = asyncHandler(async (req, res) => {

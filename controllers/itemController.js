@@ -1,3 +1,4 @@
+const Item = require('../models/item')
 const asyncHandler = require('express-async-handler');
 
 exports.index = asyncHandler(async (req, res) => {
@@ -6,12 +7,19 @@ exports.index = asyncHandler(async (req, res) => {
 );
 
 exports.item_list = asyncHandler(async (req, res) => {
-    res.send("NOT_YET_IMPLEMENTED: Page for item list")
+    const item_list = await Item.find().sort({name:1}).exec()
+    res.send(item_list);
 }
 );
 
-exports.detail_get = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Detail Page for Item: ${req.params.item_id}`)
+exports.detail_get = asyncHandler(async (req, res,next) => {
+    const item = await Item.findById(req.params.item_id);
+    if(item == null){
+        const err = new Error("Item Not Found");
+        err.status = 404;
+        return next(err)
+    }
+    res.send(item);
 });
 
 exports.create_get = asyncHandler(async (req, res) => {
