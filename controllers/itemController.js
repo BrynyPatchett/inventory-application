@@ -1,8 +1,13 @@
+const Category = require('../models/category');
 const Item = require('../models/item')
 const asyncHandler = require('express-async-handler');
 
 exports.index = asyncHandler(async (req, res) => {
-    res.send("NOT_YET_IMPLEMENTED: Index Page for Items")
+    const [numCategories,numItems] = await Promise.all([
+        Category.countDocuments({}).exec(),
+        Item.countDocuments({}).exec(),
+    ])
+    res.render("index",{title:"Inventory Application",category_count: numCategories,item_count:numItems})
 }
 );
 
@@ -13,13 +18,13 @@ exports.item_list = asyncHandler(async (req, res) => {
 );
 
 exports.detail_get = asyncHandler(async (req, res,next) => {
-    const item = await Item.findById(req.params.item_id);
+    const item = await Item.findById(req.params.item_id).populate("category").exec();
     if(item == null){
         const err = new Error("Item Not Found");
         err.status = 404;
         return next(err)
     }
-    res.send(item);
+    res.render("item_detail",{title:"Item", item:item});
 });
 
 exports.create_get = asyncHandler(async (req, res) => {
