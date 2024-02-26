@@ -4,7 +4,7 @@ const asyncHandler = require('express-async-handler');
 
 exports.category_list = asyncHandler(async (req, res) => {
     const categories = await Category.find().sort({name:1}).exec()
-    res.send(categories);
+    res.render("category_list",{title:"Categories", category_list:categories });
 }
 );
 

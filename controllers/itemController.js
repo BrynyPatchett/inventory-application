@@ -7,8 +7,8 @@ exports.index = asyncHandler(async (req, res) => {
 );
 
 exports.item_list = asyncHandler(async (req, res) => {
-    const item_list = await Item.find().sort({name:1}).exec()
-    res.send(item_list);
+    const items = await Item.find().sort({name:1}).exec()
+    res.render("item_list", {title:"Items", item_list:items});
 }
 );
 
