@@ -1,0 +1,15 @@
+extends layout 
+
+block content 
+
+    h1 Category: #{category.name}
+    p #[strong Description] #{category.description}
+    if itemsInCategory.length > 0
+    p #[strong Items ]
+        each item, index in itemsInCategory
+          a(href= item.url) #{item.name}
+          if index < itemsInCategory.length -1
+           |,&nbsp;
+        else 
+         p No Items in category.
+    

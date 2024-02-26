@@ -4,11 +4,14 @@ block content
 
     h1 Item: #{item.name}
     p #[strong Description] #{item.description}
+    if item.category.length > 0
     p #[strong Categories ]
         each category, index in item.category
           a(href= category.url) #{category.name}
           if index < item.category.length -1
            |,&nbsp;
+        else 
+         p No Category assigned.
     p #[strong Unit Price] #{item.price}
     p #[strong Stock] #{item.stock}
     
