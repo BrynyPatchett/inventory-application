@@ -28,7 +28,8 @@ exports.detail_get = asyncHandler(async (req, res,next) => {
 });
 
 exports.create_get = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Create item page`)
+    const allCategories = await Category.find({}).sort({name:1}).exec()
+    res.render("item_form",{title:"Create Category",Categories:allCategories})
 });
 
 exports.create_post = asyncHandler(async (req, res) => {

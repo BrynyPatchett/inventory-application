@@ -20,7 +20,7 @@ exports.detail_get = asyncHandler(async (req, res,next) => {
 });
 
 exports.create_get = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Create Category page`)
+    res.render("category_form",{title:"Create Category"})
 });
 
 exports.create_post = asyncHandler(async (req, res) => {
