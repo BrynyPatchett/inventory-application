@@ -29,7 +29,7 @@ exports.detail_get = asyncHandler(async (req, res,next) => {
 
 exports.create_get = asyncHandler(async (req, res) => {
     const allCategories = await Category.find({}).sort({name:1}).exec()
-    res.render("item_form",{title:"Create Category",Categories:allCategories})
+    res.render("item_form",{title:"Create Item",Categories:allCategories})
 });
 
 exports.create_post = asyncHandler(async (req, res) => {
@@ -70,5 +70,6 @@ exports.delete_get = asyncHandler(async (req, res) => {
 });
 
 exports.delete_post = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Delete Post Requst response for ${req.params.item_id}`)
+    await Item.findByIdAndDelete(req.params.item_id);
+    res.redirect("/inventory/items");
 });

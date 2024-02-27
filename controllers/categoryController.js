@@ -1,6 +1,7 @@
 const Category = require("../models/category")
 const Item = require("../models/item")
 const asyncHandler = require('express-async-handler');
+const {body, validationResult} = require("express-validator")
 
 
 exports.category_list = asyncHandler(async (req, res) => {
@@ -10,7 +11,8 @@ exports.category_list = asyncHandler(async (req, res) => {
 );
 
 exports.detail_get = asyncHandler(async (req, res,next) => {
-    const [category,itemsInCategory ] = await Promise.all([Category.findById(req.params.category_id).exec(),Item.find({category:req.params.category_id}, "name").exec()]);
+    const [category,itemsInCategory ] = await Promise.all([Category.findById(req.params.category_id).exec(),
+        Item.find({category:req.params.category_id}, "name").exec()]);
     if(category == null){
         const err = new Error("Category Not Found");
         err.status = 404;
@@ -23,9 +25,36 @@ exports.create_get = asyncHandler(async (req, res) => {
     res.render("category_form",{title:"Create Category"})
 });
 
-exports.create_post = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Create Category Post Request Response`)
-});
+exports.create_post = [
+    body("name", "Category Name Must be three or more Characters")
+    .trim()
+    .isLength({min:3})
+    .escape(),
+    body("description")
+    .optional({values:"falsy"})
+    .trim()
+    .escape(),
+    asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+
+    const category = new Category({
+        name: req.body.name,
+        description: req.body.description
+    })
+    const exists = await Category.findOne({name:category.name}).exec();
+    if(exists){
+        res.render("category_form",{title:"Create Category", category:category, errors:[{msg:"Category Already Exists, Please Choose Another Name"}] })
+        return;
+    }
+    if(!errors.isEmpty()){
+        res.render("category_form",{title:"Create Category", category:category, errors:errors.array() });
+        return;
+    }
+    await category.save();
+    res.redirect(category.url);
+
+})
+];
 
 exports.update_get = asyncHandler(async (req, res,next) => {
     const category = await Category.findById(req.params.category_id).exec();
@@ -53,5 +82,18 @@ exports.delete_get = asyncHandler(async (req, res) => {
 });
 
 exports.delete_post = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Delete Post Requst response for ${req.params.category_id}`)
+    const [category, itemsInCategory] = await Promise.all([
+        Category.findById(req.params.category_id).exec,
+        Item.find({category:req.params.category_id}, "name").exec()
+    ])
+
+    if(category == null){
+        res.redirect("/inventory/categories");
+    }
+
+    if(itemsInCategory.length > 0 ){
+        res.render("category_delete", {title:"Delete Category", category:category, itemsInCategory:itemsInCategory})
+    }
+    await Category.findByIdAndDelete(req.params.category_id);
+    res.redirect("/inventory/categories");
 });
