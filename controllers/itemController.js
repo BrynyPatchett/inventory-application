@@ -37,7 +37,24 @@ exports.create_post = asyncHandler(async (req, res) => {
 });
 
 exports.update_get = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Update page for ${req.params.item_id}`)
+    const [item,allCategories] = await Promise.all([
+        Item.findById(req.params.item_id),
+        Category.find({}).sort({name:1}).exec(),
+    ])
+
+    if(item == null){
+        const err = new Error("Item to update Not Found")
+        err.status = 404;
+        return next(err)
+    }
+
+    allCategories.forEach(category => {
+        if(item.category.includes(category._id)){
+            category.checked = "true";
+        }
+    });
+
+    res.render("item_form",{title:"Update Item",item:item, Categories:allCategories})
 });
 
 exports.update_post = asyncHandler(async (req, res) => {

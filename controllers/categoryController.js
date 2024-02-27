@@ -27,8 +27,15 @@ exports.create_post = asyncHandler(async (req, res) => {
     res.send(`NOT_YET_IMPLEMENTED: Create Category Post Request Response`)
 });
 
-exports.update_get = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Update page for ${req.params.category_id}`)
+exports.update_get = asyncHandler(async (req, res,next) => {
+    const category = await Category.findById(req.params.category_id).exec();
+    if(category == null){
+        const err = new Error("Category Not found")
+        err.status = 404;
+        return next(err)
+    }
+    res.render("category_form", {title:"Update Category",category:category})
+
 });
 
 exports.update_post = asyncHandler(async (req, res) => {

@@ -5,6 +5,7 @@ block content
     div.form-group
         label(for='name') Category:
         input(type='text', placeholder="Tool", name='name', required value=(category===undefined? '' : category.name))
+    div.form-group
         input(type='text', placeholder="Tools for around the home", name='description', required value=(category===undefined? '' : category.description))
     button(type='submit') Submit
 

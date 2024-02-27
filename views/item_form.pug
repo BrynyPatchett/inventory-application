@@ -5,9 +5,13 @@ block content
     div.form-group
         label(for='name') Item:
         input(type='text', placeholder="Hammer", name='name', required value=(item===undefined? '' : item.name))
+    div.form-group
         input(type='text', placeholder="large hammer", name='description', required value=(item===undefined? '' : item.description))
+    div.form-group
         input(type='number', placeholder=0.0, name='price', required value=(item===undefined? '' : item.price))
+    div.form-group
         input(type='number', placeholder=0, name='stock', required value=(item===undefined? '' : item.stock))
+    div.form-group
         label Categories:
         div
         for category in Categories
