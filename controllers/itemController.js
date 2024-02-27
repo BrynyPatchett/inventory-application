@@ -36,7 +36,7 @@ exports.create_post = asyncHandler(async (req, res) => {
     res.send(`NOT_YET_IMPLEMENTED: Create item Post Request Response`)
 });
 
-exports.update_get = asyncHandler(async (req, res) => {
+exports.update_get = asyncHandler(async (req, res,next) => {
     const [item,allCategories] = await Promise.all([
         Item.findById(req.params.item_id),
         Category.find({}).sort({name:1}).exec(),
