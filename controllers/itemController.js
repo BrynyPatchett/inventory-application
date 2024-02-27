@@ -62,7 +62,11 @@ exports.update_post = asyncHandler(async (req, res) => {
 });
 
 exports.delete_get = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Delete Page for  ${req.params.item_id}`)
+    const item = await Item.findById(req.params.item_id);
+    if (item == null){
+        res.redirect("/inventory/items")
+    }
+    res.render("item_delete", {title:"Delete Item", item:item})
 });
 
 exports.delete_post = asyncHandler(async (req, res) => {

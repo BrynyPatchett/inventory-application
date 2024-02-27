@@ -43,9 +43,15 @@ exports.update_post = asyncHandler(async (req, res) => {
 });
 
 exports.delete_get = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Delete Page for  ${req.params.category_id}`)
+    const [category,itemsInCategory ] = await Promise.all([Category.findById(req.params.category_id).exec(),Item.find({category:req.params.category_id}, "name").exec()]);
+    if(category == null){
+        res.redirect("/inventory/categories");
+    }
+
+    res.render("category_delete", {title:"Delete Category", category:category, itemsInCategory:itemsInCategory})
+
 });
 
 exports.delete_post = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Delete Post Requst response for ${req.params.item_id}`)
+    res.send(`NOT_YET_IMPLEMENTED: Delete Post Requst response for ${req.params.category_id}`)
 });

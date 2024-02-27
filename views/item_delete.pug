@@ -1,0 +1,9 @@
+extends layout 
+
+block content 
+ h1 #{title}: #{item.name}
+ p Do you reall want to delete this item ? 
+ form(method='POST')
+    div 
+     input(type='hidden' , name='itemid', value=item._id)
+    button(type='submit') Delete
