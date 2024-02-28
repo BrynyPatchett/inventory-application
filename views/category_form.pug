@@ -3,9 +3,10 @@ block content
  h1 #{title}
  form(method="POST")
     div.form-group
-        label(for='name') Category:
+        label(for='name') Category Name:
         input(type='text', placeholder="Tool", name='name', required value=(category===undefined? '' : category.name))
     div.form-group
+        label(for='description') Description:
         input(type='text', placeholder="Tools for around the home", name='description', value=(category===undefined? '' : category.description))
     button(type='submit') Submit
 

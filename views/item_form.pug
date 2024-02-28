@@ -4,13 +4,16 @@ block content
  form(method="POST")
     div.form-group
         label(for='name') Item:
-        input(type='text', placeholder="Hammer", name='name', required value=(item===undefined? '' : item.name))
+        input(type='text', placeholder="Hammer", name='name', id="name" ,required value=(item===undefined? '' : item.name))
     div.form-group
-        input(type='text', placeholder="large hammer", name='description', required value=(item===undefined? '' : item.description))
+        label(for='description') Description:
+        input(type='text', placeholder="large hammer",id="description", name='description', required value=(item===undefined? '' : item.description))
     div.form-group
-        input(type='number', step="0.01" placeholder=0.0, name='price', required value=(item===undefined? '' : item.price))
+        label(for='price') Price:
+        input(type='number', step="0.01" placeholder=0.0,id="price", name='price', required value=(item===undefined? '' : item.price))
     div.form-group
-        input(type='number', placeholder=0, name='stock', required value=(item===undefined? '' : item.stock))
+        label(for='stock') Stock:
+        input(type='number', placeholder=0, name='stock',id="stock", required value=(item===undefined? '' : item.stock))
     div.form-group
         label Categories:
         div

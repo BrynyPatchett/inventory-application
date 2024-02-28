@@ -4,4 +4,15 @@ html
     title= title 
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
+  div.navbar
+    p 
+      a(href="/inventory/categories") Categories
+    p 
+      a(href="/inventory/items") Items
+    p 
+      a(href="/inventory/category/create") Create Category
+    p 
+      a(href="/inventory/item/create") Create Item
+
+  div.content
     block content

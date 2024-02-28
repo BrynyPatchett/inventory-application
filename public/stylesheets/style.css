@@ -1,8 +1,23 @@
 body {
-  padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  min-height: 100vh;
 }
 
 a {
   color: #00B7FF;
+}
+
+.navbar{
+  border-right: 1px solid black;
+  padding: 10px;
+  height: min-content
+}
+
+.form-group{
+  display: flex;
+  flex-direction: column;
+  margin:5px 0px;
 }
