@@ -1,6 +1,7 @@
 const Category = require('../models/category');
 const Item = require('../models/item')
 const asyncHandler = require('express-async-handler');
+const {body,validationResult} = require("express-validator")
 
 exports.index = asyncHandler(async (req, res) => {
     const [numCategories,numItems] = await Promise.all([
@@ -32,9 +33,52 @@ exports.create_get = asyncHandler(async (req, res) => {
     res.render("item_form",{title:"Create Item",Categories:allCategories})
 });
 
-exports.create_post = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Create item Post Request Response`)
-});
+exports.create_post = [(req,res,next) => {
+    //if only one category is in request
+    if(!Array.isArray(req.body.category)){
+        req.body.category = typeof req.body.category === "undefined"? [] : [req.body.category];
+    }
+    next();
+},body("name","Name must be longer than 3 characters")
+.trim().isLength({min:3}).escape(),
+body("description")
+.optional({values:"falsy"})
+.trim()
+.escape(),
+body("price", "Price must be zero or a positive number")
+.isFloat({min:0}),
+body("stock", "Stock values must be zero or a positive number")
+.isInt({min:0}),
+asyncHandler(async (req,res,next) => {
+    const errors = validationResult(req);
+    
+    const item = new Item({
+        name: req.body.name,
+        description: req.body.description,
+        price: req.body.price,
+        stock: req.body.stock,
+        category:req.body.category
+    })
+
+
+    if(!errors.isEmpty()){
+        const allCategories = await Category.find({}).sort({name:1}).exec()
+    
+        allCategories.forEach(category => {
+            if(item.category.includes(category._id)){
+                category.checked = "true";
+            }
+        });
+        res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors.array()})
+        return;
+    }
+    await item.save();
+    res.redirect(item.url);
+
+})
+];
+
+
 
 exports.update_get = asyncHandler(async (req, res,next) => {
     const [item,allCategories] = await Promise.all([
@@ -57,9 +101,51 @@ exports.update_get = asyncHandler(async (req, res,next) => {
     res.render("item_form",{title:"Update Item",item:item, Categories:allCategories})
 });
 
-exports.update_post = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Update Post Requst response for ${req.params.item_id}`)
-});
+exports.update_post = [(req,res,next) => {
+    //if only one category is in request
+    if(!Array.isArray(req.body.category)){
+        req.body.category = typeof req.body.category === "undefined"? [] : [req.body.category];
+    }
+    next();
+},body("name","Name must be longer than 3 characters")
+.trim().isLength({min:3}).escape(),
+body("description")
+.optional({values:"falsy"})
+.trim()
+.escape(),
+body("price", "Price must be zero or a positive number")
+.isFloat({min:0}),
+body("stock", "Stock values must be zero or a positive number")
+.isInt({min:0}),
+asyncHandler(async (req,res,next) => {
+    const errors = validationResult(req);
+    
+    const item = new Item({
+        name: req.body.name,
+        description: req.body.description,
+        price: req.body.price,
+        stock: req.body.stock,
+        category:req.body.category,
+        _id: req.params.item_id
+    })
+
+
+    if(!errors.isEmpty()){
+        const allCategories = await Category.find({}).sort({name:1}).exec()
+    
+        allCategories.forEach(category => {
+            if(item.category.includes(category._id)){
+                category.checked = "true";
+            }
+        });
+        res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors.array()})
+        return;
+    }
+    await Item.findByIdAndUpdate(req.params.item_id,item)
+    res.redirect(item.url);
+
+})
+];
 
 exports.delete_get = asyncHandler(async (req, res) => {
     const item = await Item.findById(req.params.item_id);

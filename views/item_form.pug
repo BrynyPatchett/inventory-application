@@ -8,7 +8,7 @@ block content
     div.form-group
         input(type='text', placeholder="large hammer", name='description', required value=(item===undefined? '' : item.description))
     div.form-group
-        input(type='number', placeholder=0.0, name='price', required value=(item===undefined? '' : item.price))
+        input(type='number', step="0.01" placeholder=0.0, name='price', required value=(item===undefined? '' : item.price))
     div.form-group
         input(type='number', placeholder=0, name='stock', required value=(item===undefined? '' : item.stock))
     div.form-group
