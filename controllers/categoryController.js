@@ -67,9 +67,32 @@ exports.update_get = asyncHandler(async (req, res,next) => {
 
 });
 
-exports.update_post = asyncHandler(async (req, res) => {
-    res.send(`NOT_YET_IMPLEMENTED: Update Post Requst response for ${req.params.category_id}`)
-});
+exports.update_post = [
+    body("name", "Category Name Must be three or more Characters")
+    .trim()
+    .isLength({min:3})
+    .escape(),
+    body("description")
+    .optional({values:"falsy"})
+    .trim()
+    .escape(),
+    asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+
+    const category = new Category({
+        name: req.body.name,
+        description: req.body.description,
+        _id: req.params.category_id
+    })
+    if(!errors.isEmpty()){
+        res.render("category_form",{title:"Create Category", category:category, errors:errors.array() });
+        return;
+    }
+
+    await Category.findByIdAndUpdate(req.params.category_id,category)
+    res.redirect(category.url);
+})
+];
 
 exports.delete_get = asyncHandler(async (req, res) => {
     const [category,itemsInCategory ] = await Promise.all([Category.findById(req.params.category_id).exec(),Item.find({category:req.params.category_id}, "name").exec()]);
