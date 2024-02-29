@@ -2,6 +2,11 @@ const Category = require('../models/category');
 const Item = require('../models/item')
 const asyncHandler = require('express-async-handler');
 const {body,validationResult} = require("express-validator")
+require("dotenv").config();
+
+const ADMIN_PASS = process.env.ADMIN_PASS;
+
+
 
 exports.index = asyncHandler(async (req, res) => {
     const [numCategories,numItems] = await Promise.all([
@@ -30,7 +35,7 @@ exports.detail_get = asyncHandler(async (req, res,next) => {
 
 exports.create_get = asyncHandler(async (req, res) => {
     const allCategories = await Category.find({}).sort({name:1}).exec()
-    res.render("item_form",{title:"Create Item",Categories:allCategories})
+    res.render("item_form",{title:"Create Item",Categories:allCategories, passRequired:false})
 });
 
 exports.create_post = [(req,res,next) => {
@@ -69,7 +74,7 @@ asyncHandler(async (req,res,next) => {
                 category.checked = "true";
             }
         });
-        res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors.array()})
+        res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors.array(),passRequired:false})
         return;
     }
     await item.save();
@@ -98,10 +103,12 @@ exports.update_get = asyncHandler(async (req, res,next) => {
         }
     });
 
-    res.render("item_form",{title:"Update Item",item:item, Categories:allCategories})
+    res.render("item_form",{title:"Update Item",item:item, Categories:allCategories,passRequired:true})
 });
 
-exports.update_post = [(req,res,next) => {
+exports.update_post = [
+    body("password","invalid password").trim().escape().equals(ADMIN_PASS)
+    ,(req,res,next) => {
     //if only one category is in request
     if(!Array.isArray(req.body.category)){
         req.body.category = typeof req.body.category === "undefined"? [] : [req.body.category];
@@ -138,7 +145,7 @@ asyncHandler(async (req,res,next) => {
                 category.checked = "true";
             }
         });
-        res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors.array()})
+        res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors.array(),passRequired:true})
         return;
     }
     await Item.findByIdAndUpdate(req.params.item_id,item)
@@ -152,10 +159,19 @@ exports.delete_get = asyncHandler(async (req, res) => {
     if (item == null){
         res.redirect("/inventory/items")
     }
-    res.render("item_delete", {title:"Delete Item", item:item})
+    res.render("item_delete", {title:"Delete Item", item:item,passRequired:true})
 });
 
-exports.delete_post = asyncHandler(async (req, res) => {
+exports.delete_post = [
+    body("password","invalid password").trim().escape().equals(ADMIN_PASS)
+    ,asyncHandler(async (req, res) => {
+
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        const item = await Item.findById(req.params.item_id);
+        res.render("item_delete",{title:"Delete Item",item:item,errors:errors.array(),passRequired:true})
+        return;
+    }
     await Item.findByIdAndDelete(req.params.item_id);
     res.redirect("/inventory/items");
-});
+})];

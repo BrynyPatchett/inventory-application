@@ -16,4 +16,14 @@ block content
     form(method='POST')
      div 
       input(type='hidden',name='categoryid', value=category._id)
+     div.form-group
+      label(for='password') Password:
+      input(type='password', name='password',id="password", required)
      button(type='submit') Delete
+
+    if errors 
+     ul 
+     for error in errors
+      li!= error.msg
+
+     

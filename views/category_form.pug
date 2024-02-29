@@ -8,6 +8,10 @@ block content
     div.form-group
         label(for='description') Description:
         input(type='text', placeholder="Tools for around the home", name='description', value=(category===undefined? '' : category.description))
+    div.form-group
+        if passRequired
+         label(for='password') Password:
+         input(type='password', name='password',id="password", required)
     button(type='submit') Submit
 
     if errors 
