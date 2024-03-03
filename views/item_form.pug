@@ -2,7 +2,7 @@ extends layout
 block content 
  h1 #{title}
  div.form
-  form(method="POST")
+  form(method="POST" enctype="multipart/form-date")
     div.form-group
         label(for='name') Item:
         input(type='text', placeholder="Hammer", name='name', id="name" ,required value=(item===undefined? '' : item.name))
@@ -25,6 +25,9 @@ block content
                 else
                  input.checkbox-input(type='checkbox', name='category', value=category._id)
                 label(for=category._id) &nbsp;#{category.name}
+    div.form-group
+        label(for='image') Display Image:
+        input(type="file",name="display_image", id='image')
     div.form-group
         if passRequired 
             label(for='password') Password:
