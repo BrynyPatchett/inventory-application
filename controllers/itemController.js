@@ -1,4 +1,5 @@
 const Category = require('../models/category');
+var ObjectID = require('mongodb').ObjectId;
 const Item = require('../models/item')
 const asyncHandler = require('express-async-handler');
 const {body,validationResult} = require("express-validator")
@@ -9,11 +10,21 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
       const ext = file.originalname.split('.').pop()
-      cb(null, req.params.item_id + file.fieldname + "."+ ext);
+      req.imageExstension = ext;
+      cb(null, req.objectID.toHexString()+ "."+ ext);
     }
   })
 
+  function myMiddleware(req,res, next) {
+    req.objectID = new ObjectID();
+    next();
+  }
+//used to pass to image name
+function createObjectID(req,res,next){
 
+ req.body.objectID = new ObjectID().toHexString();
+ next();
+}
 
 const upload = multer({storage:storage})
 const fs = require('node:fs/promises')
@@ -53,7 +64,7 @@ exports.create_get = asyncHandler(async (req, res) => {
     res.render("item_form",{title:"Create Item",Categories:allCategories, passRequired:false})
 });
 
-exports.create_post = [upload.single("image"),(err,req,res,next) => {
+exports.create_post = [myMiddleware,upload.single("image"),(err,req,res,next) => {
    
     //if only one category is in request
     if(!Array.isArray(req.body.category)){
@@ -71,7 +82,8 @@ body("price", "Price must be zero or a positive number")
 body("stock", "Stock values must be zero or a positive number")
 .isInt({min:0}),
 asyncHandler(async (req,res,next) => {
-    // console.log(req)
+     console.log(req.objectID)
+     console.log(req.imageExstension)
     const errors = validationResult(req);
     
     const item = new Item({
@@ -79,7 +91,9 @@ asyncHandler(async (req,res,next) => {
         description: req.body.description,
         price: req.body.price,
         stock: req.body.stock,
-        category:req.body.category
+        category:req.body.category,
+        image_mime_type:req.imageExstension,
+        _id:req.objectID
     })
 
 

@@ -7,6 +7,7 @@ const ItemSchema = new Schema({
     category:[{type:Schema.Types.ObjectId, ref: "Category"}],
     price:{type:Number,required:true},
     stock:{type:Number, min:0},
+    image_mime_type:{type:String}
 
 })
 
