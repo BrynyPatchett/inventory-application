@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
   }
 
 
-const upload = multer({storage:storage,  limits: { fileSize: 4}}).single("image")
+const upload = multer({storage:storage,  limits: { fileSize: 1000000}}).single("image")
 const fs = require('node:fs/promises')
 require("dotenv").config();
 
