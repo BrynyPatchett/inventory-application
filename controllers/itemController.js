@@ -11,12 +11,14 @@ const storage = multer.diskStorage({
     filename: function (req, file, cb) {
       const ext = file.originalname.split('.').pop()
       req.imageExstension = ext;
-      cb(null, req.objectID.toHexString()+ "."+ ext);
+      cb(null, (req.params.item_id? req.params.item_id : req.objectID.toHexString())+ "."+ ext);
     }
   })
 
   function createObjectID(req,res, next) {
-    req.objectID = new ObjectID();
+    if(req.params.item_id == undefined){
+        req.objectID = new ObjectID();
+    }
     next();
   }
 
@@ -158,7 +160,7 @@ exports.update_get = asyncHandler(async (req, res,next) => {
     res.render("item_form",{title:"Update Item",item:item, Categories:allCategories,passRequired:true})
 });
 
-exports.update_post = [
+exports.update_post = [createObjectID,upload,
     body("password","invalid password").trim().escape().equals(ADMIN_PASS)
     ,(req,res,next) => {
     //if only one category is in request
