@@ -21,7 +21,18 @@ const storage = multer.diskStorage({
   }
 
 
-const upload = multer({storage:storage,  limits: { fileSize: 1000000}}).single("image")
+const upload = multer({storage:storage,  limits: { fileSize: 1000000},fileFilter: function (req, file, cb) {
+
+    var filetypes = /jpeg|jpg|gif|png|webp/;
+    var mimetype = filetypes.test(file.mimetype);
+    const ext = file.originalname.split('.').pop()
+    var extname = filetypes.test(ext);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error("Error: File upload only supports the following filetypes - " + filetypes));
+  }}).single("image")
 const fs = require('node:fs/promises')
 require("dotenv").config();
 
@@ -97,7 +108,11 @@ asyncHandler(async (req,res,next) => {
     if(!validationErrors.isEmpty() || req.error){
         const allCategories = await Category.find({}).sort({name:1}).exec()
         const errors = validationErrors.array();
-        errors.push({msg:req.error.field + ' : '+req.error.code})
+        if(req.error instanceof multer.MulterError){
+            errors.push({msg:req.error.field + ' : '+req.error.code})
+        }else{
+            errors.push({msg:req.error});
+        }
         console.log(errors)
     
         allCategories.forEach(category => {
@@ -105,8 +120,9 @@ asyncHandler(async (req,res,next) => {
                 category.checked = "true";
             }
         });
-
+        console.log(req.file.path);
         if(req.file){
+            console.log(req.file.path);
             await fs.unlink(req.file.path)
         }
 
@@ -210,6 +226,11 @@ exports.delete_post = [
         res.render("item_delete",{title:"Delete Item",item:item,errors:errors.array(),passRequired:true})
         return;
     }
-    await Item.findByIdAndDelete(req.params.item_id);
+    
+    const deletedItem = await Item.findByIdAndDelete(req.params.item_id);
+    console.log(deletedItem)
+    if(deletedItem.image_mime_type && deletedItem.image_mime_type != undefined){
+        fs.unlink(`public/images/${req.params.item_id +"."+ deletedItem.image_mime_type}`)
+    }
     res.redirect("/inventory/items");
 })];
