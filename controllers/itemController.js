@@ -2,6 +2,21 @@ const Category = require('../models/category');
 const Item = require('../models/item')
 const asyncHandler = require('express-async-handler');
 const {body,validationResult} = require("express-validator")
+const multer = require('multer')
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './public/images/')
+    },
+    filename: function (req, file, cb) {
+      const ext = file.originalname.split('.').pop()
+      cb(null, req.params.item_id + file.fieldname + "."+ ext);
+    }
+  })
+
+
+
+const upload = multer({storage:storage})
+const fs = require('node:fs/promises')
 require("dotenv").config();
 
 const ADMIN_PASS = process.env.ADMIN_PASS;
@@ -38,7 +53,8 @@ exports.create_get = asyncHandler(async (req, res) => {
     res.render("item_form",{title:"Create Item",Categories:allCategories, passRequired:false})
 });
 
-exports.create_post = [(req,res,next) => {
+exports.create_post = [upload.single("image"),(err,req,res,next) => {
+   
     //if only one category is in request
     if(!Array.isArray(req.body.category)){
         req.body.category = typeof req.body.category === "undefined"? [] : [req.body.category];
@@ -55,6 +71,7 @@ body("price", "Price must be zero or a positive number")
 body("stock", "Stock values must be zero or a positive number")
 .isInt({min:0}),
 asyncHandler(async (req,res,next) => {
+    // console.log(req)
     const errors = validationResult(req);
     
     const item = new Item({
@@ -74,6 +91,11 @@ asyncHandler(async (req,res,next) => {
                 category.checked = "true";
             }
         });
+
+        if(req.file){
+            await fs.unlink(req.file.path)
+        }
+
         res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors.array(),passRequired:false})
         return;
     }

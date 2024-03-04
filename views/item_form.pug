@@ -2,7 +2,7 @@ extends layout
 block content 
  h1 #{title}
  div.form
-  form(method="POST" enctype="multipart/form-date")
+  form(method="POST" enctype="multipart/form-data")
     div.form-group
         label(for='name') Item:
         input(type='text', placeholder="Hammer", name='name', id="name" ,required value=(item===undefined? '' : item.name))
@@ -27,7 +27,7 @@ block content
                 label(for=category._id) &nbsp;#{category.name}
     div.form-group
         label(for='image') Display Image:
-        input(type="file",name="display_image", id='image')
+        input(type="file",name="image", id='image')
     div.form-group
         if passRequired 
             label(for='password') Password:
