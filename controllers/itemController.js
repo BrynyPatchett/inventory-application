@@ -15,18 +15,13 @@ const storage = multer.diskStorage({
     }
   })
 
-  function myMiddleware(req,res, next) {
+  function createObjectID(req,res, next) {
     req.objectID = new ObjectID();
     next();
   }
-//used to pass to image name
-function createObjectID(req,res,next){
 
- req.body.objectID = new ObjectID().toHexString();
- next();
-}
 
-const upload = multer({storage:storage})
+const upload = multer({storage:storage,  limits: { fileSize: 4}}).single("image")
 const fs = require('node:fs/promises')
 require("dotenv").config();
 
@@ -64,8 +59,11 @@ exports.create_get = asyncHandler(async (req, res) => {
     res.render("item_form",{title:"Create Item",Categories:allCategories, passRequired:false})
 });
 
-exports.create_post = [myMiddleware,upload.single("image"),(err,req,res,next) => {
-   
+exports.create_post = [createObjectID,upload,(err,req,res,next) => {
+    
+   if(err){
+    req.error = err;
+   }
     //if only one category is in request
     if(!Array.isArray(req.body.category)){
         req.body.category = typeof req.body.category === "undefined"? [] : [req.body.category];
@@ -82,9 +80,8 @@ body("price", "Price must be zero or a positive number")
 body("stock", "Stock values must be zero or a positive number")
 .isInt({min:0}),
 asyncHandler(async (req,res,next) => {
-     console.log(req.objectID)
-     console.log(req.imageExstension)
-    const errors = validationResult(req);
+    console.log(req.error)
+    const validationErrors = validationResult(req);
     
     const item = new Item({
         name: req.body.name,
@@ -97,8 +94,11 @@ asyncHandler(async (req,res,next) => {
     })
 
 
-    if(!errors.isEmpty()){
+    if(!validationErrors.isEmpty() || req.error){
         const allCategories = await Category.find({}).sort({name:1}).exec()
+        const errors = validationErrors.array();
+        errors.push({msg:req.error.field + ' : '+req.error.code})
+        console.log(errors)
     
         allCategories.forEach(category => {
             if(item.category.includes(category._id)){
@@ -110,7 +110,7 @@ asyncHandler(async (req,res,next) => {
             await fs.unlink(req.file.path)
         }
 
-        res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors.array(),passRequired:false})
+        res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors,passRequired:false})
         return;
     }
     await item.save();
@@ -162,6 +162,7 @@ body("stock", "Stock values must be zero or a positive number")
 .isInt({min:0}),
 asyncHandler(async (req,res,next) => {
     const errors = validationResult(req);
+
     
     const item = new Item({
         name: req.body.name,
@@ -169,6 +170,7 @@ asyncHandler(async (req,res,next) => {
         price: req.body.price,
         stock: req.body.stock,
         category:req.body.category,
+        image_mime_type:req.imageExstension,
         _id: req.params.item_id
     })
 

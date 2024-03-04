@@ -15,7 +15,7 @@ block content
     p #[strong Unit Price] #{item.price}
     p #[strong Stock] #{item.stock}
     if(item.image_mime_type)
-     img(alt=item.name, src='/images/'+item._id+"."+item.image_mime_type)
+     img.displayImage(alt=item.name, src='/images/'+item._id+"."+item.image_mime_type)
     p
     a(href=item.url+'/update') Update Item
     p
