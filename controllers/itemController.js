@@ -29,7 +29,8 @@ const upload = multer({storage:storage,  limits: { fileSize: 1000000},fileFilter
     var mimetype = filetypes.test(file.mimetype);
     const ext = file.originalname.split('.').pop()
     var extname = filetypes.test(ext);
-
+    
+    
     if (mimetype && extname) {
       return cb(null, true);
     }
@@ -93,7 +94,6 @@ body("price", "Price must be zero or a positive number")
 body("stock", "Stock values must be zero or a positive number")
 .isInt({min:0}),
 asyncHandler(async (req,res,next) => {
-    console.log(req.error)
     const validationErrors = validationResult(req);
     
     const item = new Item({
@@ -110,21 +110,23 @@ asyncHandler(async (req,res,next) => {
     if(!validationErrors.isEmpty() || req.error){
         const allCategories = await Category.find({}).sort({name:1}).exec()
         const errors = validationErrors.array();
-        if(req.error instanceof multer.MulterError){
-            errors.push({msg:req.error.field + ' : '+req.error.code})
-        }else{
-            errors.push({msg:req.error});
-        }
-        console.log(errors)
+        if(req.error ){
+            if(!(req.error instanceof multer.MulterError)){
+                errors.push({msg:req.error});
+            }else{
+                errors.push({msg:req.error.field + ' : '+req.error.code})
+            }
+        }   
+
     
         allCategories.forEach(category => {
             if(item.category.includes(category._id)){
                 category.checked = "true";
             }
         });
-        console.log(req.file.path);
+    
         if(req.file){
-            console.log(req.file.path);
+          
             await fs.unlink(req.file.path)
         }
 
@@ -160,16 +162,18 @@ exports.update_get = asyncHandler(async (req, res,next) => {
     res.render("item_form",{title:"Update Item",item:item, Categories:allCategories,passRequired:true})
 });
 
-exports.update_post = [createObjectID,upload,
-    body("password","invalid password").trim().escape().equals(ADMIN_PASS)
-    ,(req,res,next) => {
+exports.update_post = [createObjectID,upload
+    ,(err,req,res,next) => {
+        if(err){
+            req.error = err;
+           }
     //if only one category is in request
     if(!Array.isArray(req.body.category)){
         req.body.category = typeof req.body.category === "undefined"? [] : [req.body.category];
     }
+   
     next();
-},body("name","Name must be longer than 3 characters")
-.trim().isLength({min:3}).escape(),
+},
 body("description")
 .optional({values:"falsy"})
 .trim()
@@ -178,8 +182,11 @@ body("price", "Price must be zero or a positive number")
 .isFloat({min:0}),
 body("stock", "Stock values must be zero or a positive number")
 .isInt({min:0}),
+body("password","invalid password").trim().escape().equals(ADMIN_PASS)
+,body("name","Name must be longer than 3 characters")
+.trim().isLength({min:3}).escape(),
 asyncHandler(async (req,res,next) => {
-    const errors = validationResult(req);
+    const errorsValidation = validationResult(req);
 
     
     const item = new Item({
@@ -193,15 +200,25 @@ asyncHandler(async (req,res,next) => {
     })
 
 
-    if(!errors.isEmpty()){
+    if(!errorsValidation.isEmpty() || req.error){
         const allCategories = await Category.find({}).sort({name:1}).exec()
+        const errors = errorsValidation.array();
+        
+        
+        if(req.error ){
+            if(!(req.error instanceof multer.MulterError)){
+                errors.push({msg:req.error});
+            }else{
+                errors.push({msg:req.error.field + ' : '+req.error.code})
+            }
+        }   
     
         allCategories.forEach(category => {
             if(item.category.includes(category._id)){
                 category.checked = "true";
             }
         });
-        res.render("item_form",{title:"Create Item",item:item, Categories:allCategories,errors:errors.array(),passRequired:true})
+        res.render("item_form",{title:"Update Item",item:item, Categories:allCategories,errors:errors,passRequired:true})
         return;
     }
     await Item.findByIdAndUpdate(req.params.item_id,item)
@@ -230,7 +247,6 @@ exports.delete_post = [
     }
     
     const deletedItem = await Item.findByIdAndDelete(req.params.item_id);
-    console.log(deletedItem)
     if(deletedItem.image_mime_type && deletedItem.image_mime_type != undefined){
         fs.unlink(`public/images/${req.params.item_id +"."+ deletedItem.image_mime_type}`)
     }
